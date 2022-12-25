@@ -1,26 +1,21 @@
 package com.example.restapiapp.repository;
 
+import com.example.restapiapp.model.Department;
 import com.example.restapiapp.model.Person;
-import org.springframework.data.jdbc.repository.query.Query;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface PersonRepository extends CrudRepository<Person, Long> {
+public interface PersonRepository extends JpaRepository<Person, Long> {
 
-    //сколько сотрудников в департаменте
-    @Query("SELECT COUNT(*) FROM person WHERE department = :department")
-    int getCountPersonInDepartment (long department);
+    int countByDepartment_Id(Long id);
 
-    //начальник департамента
-    @Query("SELECT * FROM person WHERE department = :department AND supervisor = true")
-    Person getSupervisorOfDepartment(long department);
+    Person findPersonBySupervisorAndDepartment_Name(boolean b, String name);
 
-    //сумма зарплат работников департамента id
-    @Query("SELECT SUM(salary) FROM person WHERE department = :department")
-    double salaryFoundDepartment (long id);
+    int countByDepartment_Name(String name);
 
-    //все работники департамента id
-    @Query("SELECT * FROM person WHERE department = :department")
-    List<Person> allPersonOfDepartment (long id);
+    List<Person> findAllByDepartment_Id(Long id);
+
+
 }

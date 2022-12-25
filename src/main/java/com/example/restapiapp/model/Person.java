@@ -1,64 +1,68 @@
 package com.example.restapiapp.model;
 
-import jakarta.validation.constraints.*;
 import lombok.*;
-import org.springframework.data.annotation.Id;
 
+import javax.persistence.*;
+import javax.validation.constraints.*;
 import java.util.Date;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
+//@Table(name = "person_db")
 public class Person {
 
     @Id
-    private long Id;
+    @GeneratedValue
+    private Long id;
 
-    @NotEmpty(message = "Name should not be empty")
-    @Size(min = 2, max = 30, message = "Name should be between 2 and 30 characters")
+    @Column(length=30, nullable=false)
     private String name; //имя
 
-    @NotEmpty(message = "Surname should not be empty")
-    @Size(min = 2, max = 30, message = "Surname should be between 2 and 30 characters")
+    @Column(length=30, nullable=false)
     private String surname;  //фамилия
 
-    @Size(min = 2, max = 30, message = "Patronymic should be between 2 and 30 characters")
+    @Column(length=30)
     private String patronymic;  //отчество (необязательно)
 
-    @NotEmpty(message = "Choose a gender")
-    @PositiveOrZero
-    private double sex;  //пол
+    @Column(nullable=false)
+    private boolean sex;  //пол
 
-    @NotEmpty(message = "Birthday should not be empty")
-    @Past(message = "Birthday should not be in the future or present")
+    @Column(nullable=false)
     private Date birthday;  //день рождения
 
-    @NotEmpty(message = "Phone number should not be empty")
-    @Size(min = 10, max = 12, message = "Phone number is not correct")
+    @Column(nullable=false)
     private String phoneNumber;  //номер телефона
 
-    @NotEmpty(message = "Email should not be empty")
-    @Email(message = "Email should be valid")
+    @Column(nullable=false)
+    @Email
     private String mail;  //e-mail
 
-    @NotEmpty(message = "Date of employment should not be empty")
-    @PastOrPresent(message = "Date of employment should be valid")
+    @Column(nullable=false)
+    @PastOrPresent
     private Date dateOfEmployment;  //дата трудоустройства
 
-    @PastOrPresent(message = "Date of employment should be valid")
+    @PastOrPresent
     private Date dateOfDismissal;  //дата увольнения (необязательно)
 
-    @NotEmpty(message = "Post should not be empty")
-    private int post;  //должность (выбирается из справочника)
+//    private int post;  //должность (выбирается из справочника)
 
-    @NotEmpty(message = "Salary should not be empty")
-    @Positive(message = "Salary cannot be less than or equal to zero")
+    @Column(nullable=false)
+    @Positive
     private double salary;  //оклад в руб.
 
-    @NotEmpty(message = "Salary should not be empty")
-    @PositiveOrZero
-    private double supervisor;  //руководитель ли он?
+    @Column(nullable=false)
+    private boolean supervisor;  //руководитель ли он?
 
-    private long department;
+    @ManyToOne
+    private Department department;
 
+    public boolean isSupervisor() {
+        return supervisor;
+    }
+
+    public void setSupervisor(boolean supervisor) {
+        this.supervisor = supervisor;
+    }
 }
