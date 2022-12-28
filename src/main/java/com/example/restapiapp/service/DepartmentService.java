@@ -1,5 +1,7 @@
 package com.example.restapiapp.service;
 
+import com.example.restapiapp.exception.departmentException.DeletingNonEmptyDepartmentException;
+import com.example.restapiapp.exception.departmentException.NonExistingDepartmentException;
 import com.example.restapiapp.model.Department;
 import com.example.restapiapp.model.Person;
 import com.example.restapiapp.repository.DepartmentRepository;
@@ -11,6 +13,8 @@ import java.util.List;
 
 @Service
 public class DepartmentService {
+
+
 
     private final DepartmentRepository dr;
     private final PersonRepository pr;
@@ -31,22 +35,21 @@ public class DepartmentService {
     }
 
     //  удаление департамента
-    public String deleteDepartment(Long id) {
+    public void deleteDepartment(Long id) throws DeletingNonEmptyDepartmentException {
         if (pr.countByDepartment_Id(id) == 0) {
             dr.deleteById(id);
-            return "Department delete";
         } else {
-            return "Department has employees. Department delete impossible.";
+            throw new DeletingNonEmptyDepartmentException();
         }
     }
 
     //    получение списка всех главенствующих департаментов для департамента Id
-    public List<Department> headDepartment(long id) {
+    public List<Department> headDepartment(long id) throws NonExistingDepartmentException {
         List<Department> departmentsList = new ArrayList<>();
         long idForCycle = id;
 //        добавляю в departmentList главный департамент для департамента idForCycle
-        while (dr.getById(idForCycle).getHeadDepartmentId() != null) {
-            Department department = dr.getById(idForCycle).getHeadDepartmentId();
+        while (dr.findById(idForCycle).orElseThrow(NonExistingDepartmentException :: new).getHeadDepartmentId() != null) {
+            Department department = dr.findById(idForCycle).get().getHeadDepartmentId();
             departmentsList.add(department);
 //        Изменяю idForCycle на Id полученного (главного) департамента
             idForCycle = department.getId();
@@ -65,34 +68,61 @@ public class DepartmentService {
     }
 
     //  прямые подчиненные департаменты данного департамента
-    public List<Department> getSubordinateDepartment(Long id) {
+    public List<Department> getSubordinateDepartment(Long id) throws NonExistingDepartmentException {
+        Department d = dr.findById(id).orElseThrow(NonExistingDepartmentException :: new);
         return dr.findAllByHeadDepartmentId_Id(id);
     }
 
     //  поиск департаментов по Id
-    public Department getDepartmentById(Long id) {
-        return dr.getById(id);
+    public List<Object> getDepartmentById(Long id) throws NonExistingDepartmentException {
+        Department d = dr.findById(id).orElseThrow(NonExistingDepartmentException :: new);
+        return getDepartmentsByName(d.getName());
     }
 
     //  перевод всех сотрудников в другой департамент
-    public void transferPersonsToAnotherDepartment(Long departmentNew, Long departmentOld) {
+    public void transferPersonsToAnotherDepartment(Long departmentNew, Long departmentOld) throws NonExistingDepartmentException {
         //руководитель расформированного департамента перестает быть руководителем
-        Department d = getDepartmentById(departmentOld);
+        Department d = dr.findById(departmentOld).orElseThrow(NonExistingDepartmentException :: new);
+        Department newDepartment = dr.findById(departmentNew).orElseThrow(NonExistingDepartmentException :: new);
         Person oldSupervisor = pr.findPersonBySupervisorAndDepartment_Name(true, d.getName());
         oldSupervisor.setSupervisor(false);
         List<Person> personsOldDepartment = pr.findAllByDepartment_Id(departmentOld);
         for (Person p : personsOldDepartment) {
-            p.setDepartment(getDepartmentById(departmentNew));
+            p.setDepartment(newDepartment);
             pr.save(p);
         }
     }
 
     //  получение всех сотрудников департамента
-    public List<Person> getPersonsByDepartment(Long departmentId){
+    public List<Person> getPersonsByDepartment(Long departmentId) throws NonExistingDepartmentException {
+        Department department = dr.findById(departmentId).orElseThrow(NonExistingDepartmentException :: new);
         return pr.findAllByDepartment_Id(departmentId);
     }
 
     //  заработный фонд департамента
+    public long salaryFoundByDepartment(Long departmentId) throws NonExistingDepartmentException {
+        Department department = dr.findById(departmentId).orElseThrow(NonExistingDepartmentException :: new);
+        return pr.salaryFoundByDepartment(departmentId);
+    }
 
+    //  кто в подчинении у данного депортамента
+    public List<Department> getAllDownDepartmentStart(Long id) throws NonExistingDepartmentException{
+        Department department = dr.findById(id).orElseThrow(NonExistingDepartmentException :: new);
+        List<Department> departmentList = new ArrayList<>();
+        getAllDownDepartment(id, departmentList);
+        return departmentList;
+    }
+    //  рекурсивный метод по поиску подчиненных департаментов
+    public void getAllDownDepartment(Long id, List<Department> departmentList) {
+        if(dr.countByHeadDepartmentId_Id(id) == 0)
+            return;
+
+        List<Department> departments = dr.findAllByHeadDepartmentId_Id(id);
+        for (Department dep : departments){
+            departmentList.add(dep);
+
+            getAllDownDepartment(dep.getId(), departmentList);
+        }
+    }
 
 }
