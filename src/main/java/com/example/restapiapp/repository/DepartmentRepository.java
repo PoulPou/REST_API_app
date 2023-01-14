@@ -13,9 +13,5 @@ public interface DepartmentRepository extends JpaRepository<Department, Long>{
 
     List<Department> findAllByHeadDepartmentId_Id(Long id);
 
-    Department findDepartmentByHeadDepartmentId_Id(Long id);
-
     Long countByHeadDepartmentId_Id(Long id);
-
-    List<Department> findDepartmentsByHeadDepartmentId(Long id);
 }

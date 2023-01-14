@@ -3,9 +3,7 @@ package com.example.restapiapp.model;
 import lombok.*;
 
 import javax.persistence.*;
-import javax.validation.constraints.*;
 import java.util.Date;
-import java.util.List;
 
 
 @Data
@@ -26,4 +24,10 @@ public class Department {
 
     @OneToOne
     private Department headDepartmentId; //id главного департамента
+
+    public Department(String name, Date dateOfCreation, Department headDepartmentId) {
+        this.name = name;
+        this.dateOfCreation = dateOfCreation;
+        this.headDepartmentId = headDepartmentId;
+    }
 }

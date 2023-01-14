@@ -1,5 +1,6 @@
 package com.example.restapiapp.model;
 
+import com.example.restapiapp.enums.Profession;
 import lombok.*;
 
 import javax.persistence.*;
@@ -10,7 +11,6 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-//@Table(name = "person_db")
 public class Person {
 
     @Id
@@ -46,7 +46,7 @@ public class Person {
     @PastOrPresent
     private Date dateOfDismissal;  //дата увольнения (необязательно)
 
-//    private int post;  //должность (выбирается из справочника)
+    private Profession post;  //должность (выбирается из справочника)
 
     @Column(nullable=false)
     @Positive
@@ -64,5 +64,20 @@ public class Person {
 
     public void setSupervisor(boolean supervisor) {
         this.supervisor = supervisor;
+    }
+
+    public Person(String name, String surname, String patronymic, boolean sex, Date birthday, String phoneNumber, String mail, Date dateOfEmployment, Profession post, double salary, boolean supervisor, Department department) {
+        this.name = name;
+        this.surname = surname;
+        this.patronymic = patronymic;
+        this.sex = sex;
+        this.birthday = birthday;
+        this.phoneNumber = phoneNumber;
+        this.mail = mail;
+        this.dateOfEmployment = dateOfEmployment;
+        this.post = post;
+        this.salary = salary;
+        this.supervisor = supervisor;
+        this.department = department;
     }
 }
